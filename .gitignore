@@ -1,0 +1,25 @@
+# macOS metadata
+.DS_Store
+
+# Build products
+/build/
+*.o
+*.a
+*.so
+*.dylib
+*.dSYM/
+/code/XXNN-Multinivell-main/exec
+
+# Job output and large profiling artifacts
+slurm-*.out
+slurm-*.err
+/results/raw/
+/results/profiles/
+*.nsys-rep
+*.ncu-rep
+
+# Report build intermediates
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
