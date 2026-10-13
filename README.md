@@ -8,6 +8,8 @@ against its sequential implementation.
 The [assignment](resources/CAP_Pra_ctica_NN_26_27.pdf) is the reference for scope
 and deliverables. This repository currently contains the starter implementation
 and a shared project scaffold; the parallel versions are still to be developed.
+The current development scope is **OpenMP**. The `openmpi` and `cuda` branches
+are reserved for later work; no MPI or GPU implementation setup is included yet.
 
 ## Task brief
 
@@ -88,13 +90,13 @@ measurement tables and figures needed to reproduce the reports.
 | Branch | Purpose |
 | --- | --- |
 | `main` | Shared scaffold and sequential reference |
-| `openmp` | OpenMP implementation and analysis |
-| `openmpi` | MPI implementation using OpenMPI and analysis |
-| `cuda` | CUDA implementation and analysis |
+| `openmp` | Active development: OpenMP implementation and analysis |
+| `openmpi` | Reserved for a future MPI implementation using OpenMPI |
+| `cuda` | Reserved for a future CUDA implementation |
 
 All three implementation branches start from the shared scaffold commit.
-Use `git switch openmp`, `git switch openmpi`, or `git switch cuda` to select
-a track. Put common baseline fixes and documentation on `main`, then merge
+Use `git switch openmp` for the current work. Put common baseline fixes and
+documentation on `main`, then merge
 them into each implementation branch. Record any changes to the sequential
 reference so timing comparisons use equivalent workloads. Keep the original
 starter recoverable through the repository's initial commit.
@@ -150,7 +152,7 @@ Before implementing parallelism:
    shuffle generator, but weight initialization uses `rand()` without `srand()`.
    The custom generator also uses signed arithmetic that can overflow. Define
    reproducible initialization and pattern ordering for all implementations.
-3. **Add a Makefile and validation checks.** Provide sequential and backend
+3. **Add a Makefile and validation checks for OpenMP.** Provide sequential and OpenMP
    targets, a debug/sanitizer build, and a clean target. Check predictions, loss,
    and gradients against the corrected reference with documented numerical
    tolerances; floating-point reduction order may change parallel results.
@@ -160,8 +162,9 @@ Before implementing parallelism:
    initialization and cleanup. Add separate phase measurements and report
    `speedup = T_seq / T_parallel` and CPU `efficiency = speedup / workers`.
    State the baseline and resource definition explicitly for GPU comparisons.
-5. **Prepare delivery infrastructure.** Add backend-specific cluster scripts,
-   report outlines, and the confirmed deadlines and accelerator requirements.
+5. **Prepare the OpenMP delivery infrastructure.** Add OpenMP cluster scripts,
+   a report outline, and the confirmed OpenMP deadline. Defer MPI and GPU
+   tooling until their development begins.
    The initial commit already tracks `.DS_Store` files and the supplied `exec`;
    consider untracking these generated files in a separate cleanup commit.
 
