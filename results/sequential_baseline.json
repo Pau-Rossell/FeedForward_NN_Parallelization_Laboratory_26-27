@@ -1,0 +1,66 @@
+{
+  "experiment": "Corrected sequential baseline, five repetitions",
+  "host": "clus07.hpc.local",
+  "cluster": "Wilma",
+  "partition": "new-nodo.q",
+  "cpu_model": "Intel Xeon Gold 5416S",
+  "sockets": 2,
+  "cores_per_socket": 16,
+  "physical_cores": 32,
+  "logical_cpus": 64,
+  "compiler": "GCC 13.2.1 20231205 (Red Hat 13.2.1-6)",
+  "build_setting_from_seq_sub": "-Ofast, linked with -lm",
+  "epochs": 10,
+  "batch_size": 50,
+  "training_patterns_processed_per_epoch": 1900,
+  "test_patterns": 946,
+  "runs": [
+    {
+      "run": 1,
+      "application_seconds": 12.251508,
+      "perf_seconds": 12.267766176,
+      "recognition_hits": 916,
+      "final_epoch_printed_loss": 0.055671
+    },
+    {
+      "run": 2,
+      "application_seconds": 12.437241,
+      "perf_seconds": 12.452682115,
+      "recognition_hits": 916,
+      "final_epoch_printed_loss": 0.055671
+    },
+    {
+      "run": 3,
+      "application_seconds": 12.474166,
+      "perf_seconds": 12.489612949,
+      "recognition_hits": 916,
+      "final_epoch_printed_loss": 0.055671
+    },
+    {
+      "run": 4,
+      "application_seconds": 12.322187,
+      "perf_seconds": 12.337325586,
+      "recognition_hits": 916,
+      "final_epoch_printed_loss": 0.055671
+    },
+    {
+      "run": 5,
+      "application_seconds": 12.231889,
+      "perf_seconds": 12.246883333,
+      "recognition_hits": 916,
+      "final_epoch_printed_loss": 0.055671
+    }
+  ],
+  "summary": {
+    "count": 5,
+    "mean_application_seconds": 12.3433982,
+    "sample_standard_deviation_seconds": 0.10866774380514221,
+    "coefficient_of_variation_percent": 0.8803713697346507,
+    "minimum_application_seconds": 12.231889,
+    "maximum_application_seconds": 12.474166,
+    "course_reference_sequential_seconds": 12.095956,
+    "mean_time_difference_from_course_reference_percent": 2.045660549691153
+  },
+  "pilot_run_included": false,
+  "raw_output": "results/raw/sequential/clus07-five-runs.txt"
+}

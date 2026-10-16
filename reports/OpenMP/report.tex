@@ -40,69 +40,60 @@
 % Complete the abstract with measured results and conclusions after the
 % implementation and experimental evaluation are finished.
 \begin{abstract}
-This project investigates the shared-memory parallelization of a feedforward
-neural network using OpenMP. We begin by examining the supplied sequential
-program, then develop and compare loop-based and task-based parallelization.
-We evaluate execution time, speedup, efficiency, and scaling, with lightweight
-checks of application behavior. The report follows development order, linking
-each decision to code dependencies and measured evidence, while distinguishing
-observations from hypotheses.
-Quantitative findings and conclusions will be incorporated after the
-experiments are completed.
+We investigate OpenMP parallelization of the supplied feedforward neural
+network, progressing from a corrected sequential baseline to loop-based and
+task-based implementations. The report follows our implementation decisions
+and their measured outcomes. Evaluation focuses on execution time, speedup,
+efficiency, and strong scaling, with brief checks of neural-network behavior.
+Findings and conclusions will be added after the experiments.
 \end{abstract}
 
 \section{Experimental approach}
 \label{sec:approach}
 
-\subsection{Objective and initial decision}
+We parallelize the supplied C program and evaluate its performance as the
+thread count increases~\cite{assignment}. After examining dependencies and
+establishing a corrected sequential baseline, we develop loop-based
+parallelism, then investigate a task-based alternative. The assignment
+permits either approach; exploring both is our choice. Comparisons preserve
+the workload, compiler settings, and timing boundaries. The original source
+remains recoverable in Git.
 
-Our objective is to parallelize the supplied C program using OpenMP and
-evaluate how its performance changes as we increase the number of threads.
-We first examine the execution flow and data dependencies, then introduce
-parallelism in controlled steps. This follows the focus of the course
-project~\cite{assignment}.
+\subsection{Measurement and scaling}
 
-We keep the original source recoverable in Git and document any necessary
-memory-safety or defined-execution corrections separately. The dataset,
-network configuration, and amount of training work must remain consistent
-within each performance comparison.
+We briefly check successful execution, finite losses, and consistent
+recognition results. Evaluation focuses on parallel performance. We also
+examine shared data and synchronization to ensure valid execution.
 
-\subsection{Planned progression}
+Following the course notation~\cite{performance-metrics}, let $N$ denote
+problem size, $p$ the thread count, $T(N,1)$ our measured sequential time,
+and $T(N,p)$ the parallel time. Then
+\begin{align}
+  S(N,p) &= \frac{T(N,1)}{T(N,p)}, \\
+  E(N,p) &= \frac{S(N,p)}{p}.
+\end{align}
+We use our own sequential baseline on the same hardware and workload.
+OpenMP runs with one thread provide an additional overhead comparison;
+published timings remain a separate reference.
 
-\begin{enumerate}[label=\textbf{\arabic*.}]
-  \item \textbf{Sequential reference.} Establish what the supplied program
-    computes and establish a usable performance baseline. Record the execution
-    flow, basic correctness checks, configuration, build, and repeated timings.
-  \item \textbf{Loop-based OpenMP.} Identify loops that can execute concurrently
-    without violating dependencies. Explain data ownership and synchronization,
-    validate against the sequential reference, and measure execution across
-    thread counts.
-  \item \textbf{Task-based OpenMP.} Investigate whether a meaningful task
-    decomposition offers an advantage over loop work sharing. Explain task
-    granularity and dependencies, validate the implementation, and compare it
-    under the same conditions.
-  \item \textbf{Comparison with course references.} Compare scaling with the
-    indicative course results. Match the execution environment where possible
-    and state differences where matching is not possible.
-\end{enumerate}
+We evaluate \textbf{strong scaling}: keep the dataset, network, batch size,
+and epochs fixed and vary $p\in\{1,2,4,6,12\}$. We will plot time, speedup,
+and efficiency against thread count. Ideally, $T(N,p)=T(N,1)/p$,
+$S(N,p)=p$, and $E(N,p)=1$. These curves show where additional threads stop
+helping. \textbf{Weak scaling} grows the workload with the thread count and
+is outside this fixed-workload experiment. We will report repeated timings
+and variability, and distinguish measured explanations from hypotheses.
 
-The assignment permits loop-based or task-based OpenMP. We will begin with loop 
-work sharing and introduce tasks after identifying a suitable unit of independent work. 
+\subsection{Course references}
 
-We will also measure each OpenMP implementation with one thread as a
-supplementary check. Our main speedup and efficiency calculations will use
-the measured sequential program as their baseline.
-
-\subsection{Course reference times and comparison limits}
-
-The supplied reference document~\cite{reference-times} describes its results
-as indicative values from a functional, optimized OpenMP implementation. It
-specifies 10 epochs and reports the execution times in
-Table~\ref{tab:reference-times}.
+Table~\ref{tab:reference-times} gives indicative course timings for an
+optimized OpenMP implementation~\cite{reference-times}. We have access to
+Wilma and Aolin, but the reference source code and exact timing boundaries
+are unavailable, limiting direct comparisons.
 
 \begin{table}[htbp]
   \centering
-  \caption{Course reference execution times for 10 epochs.}
+  \caption{Course reference execution times in seconds (10 epochs).}
   \label{tab:reference-times}
   \small
   \setlength{\tabcolsep}{4pt}
@@ -120,124 +111,110 @@ Table~\ref{tab:reference-times}.
   \end{tabular}
 \end{table}
 
-We do not have the source code for this reference times. We will therefore use
-these indicative times as context.
-
-Our access to Wilma and Aolin clusters allows measurements on the corresponding nodes.
-We will first compare sequential timings, then test OpenMP with 1, 2, 4, 6, and 12 
-threads, stating any differences from the reference setup.
-
-\subsection{Validation and measurement}
-
-We will check that the neural network runs correctly and produces results similar 
-to the original program. However, our main focus will be execution time: how much 
-faster the parallel versions run, how efficiently they use the available threads, 
-and how performance changes as we add more threads. We will also check that threads 
-work together correctly so that our timing comparisons are meaningful.
-
-We use the performance metrics defined in the course
-materials~\cite{performance-metrics}. Let $N$ denote the problem size and
-$p$ the number of OpenMP threads. Let $T(N,1)$ be our measured execution time
-of the sequential program, and let $T(N,p)$ be the execution time of the
-parallel version being evaluated with $p$ threads. Speedup is:
-\begin{equation}
-  S(N,p) = \frac{T(N,1)}{T(N,p)}.
-\end{equation}
-Efficiency is the achieved speedup divided by the number of threads:
-\begin{equation}
-  E(N,p) = \frac{S(N,p)}{p}
-         = \frac{T(N,1)}{p\,T(N,p)}.
-\end{equation}
-
-We calculate these metrics from our own sequential and parallel measurements
-on the same hardware, with matching workloads and timing boundaries. The
-published course times are used for a separate comparison, not substituted
-for our measured sequential baseline.
-
-\subsubsection{Scaling evaluation}
-
-Following the course distinction~\cite{performance-metrics}, we will evaluate
-\textbf{strong scaling}: keep the dataset, network configuration, batch size,
-and number of epochs fixed at a workload $N_0$, and increase the number of
-threads through $p\in\{1,2,4,6,12\}$ where the allocated hardware permits.
-
-We will plot execution time $T(N_0,p)$, speedup $S(N_0,p)$, and efficiency
-$E(N_0,p)$ against $p$. The ideal scaling references are:
-\begin{equation}
-  \begin{aligned}
-    T_{\mathrm{ideal}}(N_0,p) &= \frac{T(N_0,1)}{p}, \\
-    S_{\mathrm{ideal}}(N_0,p) &= p, \\
-    E_{\mathrm{ideal}}(N_0,p) &= 1.
-  \end{aligned}
-\end{equation}
-Thus, ideally, doubling the thread count halves runtime. We will identify
-where adding threads gives little further improvement or increases runtime,
-and report the corresponding speedup and efficiency. Scaling is assessed
-through these curves, rather than by a separate single value.
-
-\textbf{Weak scaling} instead increases the workload in proportion to the
-number of threads, keeping work per thread constant; ideally, runtime stays
-constant. This requires a separate experiment with growing workloads and is
-not measured by our fixed-workload comparison with the course reference times.
-
-We will report repeated timings and their variability, keeping compiler flags
-consistent within each comparison. Explanations involving caches, vectorization,
-or bandwidth will require supporting evidence; otherwise, they remain hypotheses.
-
 \section{Understanding the sequential program}
 \label{sec:sequential}
 
-\subsection{Execution flow and timing boundaries}
+\subsection{Execution flow}
 
-We begin with \texttt{main()} in the supplied \texttt{main.c}, which establishes
-the order of execution~\cite{starter-code}:
+In \texttt{main()}, configuration and initialization precede the timer;
+training and testing follow, before the timer stops and final cleanup
+begins~\cite{starter-code}. The measured interval includes training,
+testing, dataset loading, console output, and input-data cleanup. We
+preserve this boundary. Testing uses the trained weights, so training and
+testing must remain ordered.
 
-\begin{enumerate}
-  \item \texttt{readConfiguration()} reads the network dimensions, dataset
-    paths, and training parameters. It uses the default configuration file
-    unless another path is supplied as a command-line argument.
-  \item \texttt{init()} allocates the neural network and initializes its weights
-    and biases.
-  \item \texttt{gettimeofday()} records the starting time.
-  \item \texttt{train\_neural\_net()} loads the training data and trains
-    the network.
-  \item \texttt{test\_nn()} loads the test data and evaluates the trained
-    network.
-  \item \texttt{elapsedT()} computes the elapsed time, after which
-    \texttt{dinit()} releases the remaining network memory.
-\end{enumerate}
-
-This order identifies our first dependency: testing uses the parameters
-produced by training, so these two phases cannot simply run concurrently.
-We must look for parallel work within them rather than execute the two
-function calls in parallel.
-
-The timer starts after configuration and network initialization and stops
-after testing, before final network cleanup. The reported time therefore
-includes dataset loading, computation, console output, and input-data cleanup
-inside the training and testing functions. It is not a training-only
-measurement. We will assume that this was the timing boundary used for the 
-reference times and we will preserve it for the initial comparisons
-and label any additional phase timings separately. No OpenMP directives have
-been introduced and no cluster timings have been collected at this stage.
+The default network has layers $1024\to500\to210\to135\to10$, with
+10 training epochs and batches of 50 patterns. The supplied batch loop
+processes 38 complete batches per epoch: 1,900 of the 1,934 training patterns,
+after shuffling. We preserve this workload, including omission of the last
+34 patterns. Testing uses all 946 test patterns.
 
 \subsection{Baseline corrections}
 
-Before benchmarking, we corrected the following implementation issues:
+Before benchmarking, we corrected four implementation issues:
 \begin{itemize}
   \item \textbf{Image loading:} a bounded row buffer prevents the string
     terminator from overflowing the pixel array.
-  \item \textbf{Random-number generation:} unsigned 32-bit arithmetic replaces
-    signed overflow, with explicit conversion back to the existing signed
-    results, preserving the original's usual 32-bit wraparound sequence.
+  \item \textbf{Random-number generation:} unsigned 32-bit arithmetic avoids
+    signed overflow while preserving the usual wraparound sequence.
   \item \textbf{Dataset loading:} training targets are initialized only when
-    loading training data, avoiding unintended writes during test-data loading.
-  \item \textbf{Bias handling:} bias gradients are reset and applied to every
-    hidden and output layer, while the input layer is excluded.
+    loading training data, preventing unintended writes during testing.
+  \item \textbf{Bias handling:} gradients are reset and applied to hidden
+    and output biases, excluding the input layer.
 \end{itemize}
-We will use these corrections in both the sequential and parallel versions
-so that their performance comparisons share the same baseline. Updating the
-output-layer biases can change the network's recognition results.
+Both sequential and parallel versions use these corrections. Updating the
+output biases can change recognition results.
+
+\section{Sequential baseline}
+
+After a preliminary execution, we collected five sequential runs on
+\texttt{clus07.hpc.local}, in Wilma's \texttt{new-nodo.q} partition.
+The node reports an Intel Xeon Gold 5416S, two sockets with 16 physical cores
+each, and two hardware threads per core (32 physical cores, 64 logical CPUs).
+We used GCC 13.2.1 with \texttt{-Ofast}, linking \texttt{-lm}, and kept the
+configuration and executable unchanged between runs.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Sequential application timings on \texttt{clus07}, five runs.
+    Standard deviation is the sample standard deviation.}
+  \label{tab:sequential-repetitions}
+  \small
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Statistic & Time (s) \\
+    \midrule
+    Mean & 12.343398 \\
+    Standard deviation & 0.108668 \\
+    Minimum & 12.231889 \\
+    Maximum & 12.474166 \\
+    Course sequential reference & 12.095956 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The standard deviation is 0.88\% of the mean. All five runs produced the
+same printed epoch losses, a final loss of 0.055671, and 916 correct
+classifications out of 946. We use the mean application time,
+12.343398~s, as $T(N,1)$ for comparisons on this node and configuration;
+\texttt{perf}'s process-wide elapsed time is not used. The individual runs
+and environment are retained in the
+\href{../../results/sequential_baseline.json}{measurement record}.
+Our mean exceeds the course reference by 2.05\%; the cause is undetermined.
+Up to 12 threads fit on physical cores; placement will be checked.
+
+\section{Loop-based OpenMP}
+
+\subsection{Forward propagation}
+
+We added \texttt{parallel for schedule(static)} to the neuron loop in
+\texttt{forward\_prop()}~\cite{openmp-lecture}. Each iteration reads the
+preceding layer's activations, weights, and bias, and writes distinct
+\texttt{z[j]} and \texttt{actv[j]} elements. Layers remain ordered, with
+loop completion ensuring that all activations are available to the next
+layer. The inner sum remains sequential, retaining its accumulation order.
+Static scheduling suits the equal-length sums. Repeated parallel regions
+and synchronization may limit gains in small layers; this requires measurement.
+
+\subsection{Backpropagation and shared sums}
+
+Different neurons in the supplied \texttt{back\_prop()} add to the same
+\texttt{dactv[k]}, making direct neuron-loop parallelization unsafe. We
+separated the work: parallel neuron iterations compute \texttt{dz}, bias
+gradients, and distinct weight-gradient rows; parallel \texttt{k} iterations
+then accumulate individual \texttt{dactv[k]} values in the original neuron
+order. Loop completion enforces dependencies; input-layer derivatives are
+omitted as before. Each element has one writer per phase. Patterns remain
+sequential because they share activation buffers and batch gradients.
+
+\subsection{Gradient reset and weight updates}
+
+Next, we will distribute weight-gradient resets across array elements and
+weight updates across independent neuron pairs using \texttt{collapse(2)}.
+Both use static scheduling and distinct writes, without reductions. The
+small bias loops remain sequential to limit parallel-region overhead.
+Gradient reset, batch accumulation, and parameter updates remain ordered.
+Benchmarking follows completion of these changes and OpenMP build setup.
 
 \Needspace{7\baselineskip}
 \begin{thebibliography}{9}
@@ -245,8 +222,8 @@ output-layer biases can change the network's recognition results.
   \raggedright
   \bibitem{assignment}
     Universitat Aut\`onoma de Barcelona,
-    \textit{Parallel Programming: Practical Laboratory Project},
-    academic year 2026--2027, especially Sections III and IV.
+    \textit{Parallel Programming Laboratory Project},
+    2026--2027, Sections III--IV.
     \href{../../resources/CAP_Pra_ctica_NN_26_27.pdf}{Repository copy}.
   \bibitem{reference-times}
     Universitat Aut\`onoma de Barcelona,
@@ -255,8 +232,11 @@ output-layer biases can change the network's recognition results.
     \href{../../resources/ReferenceTimesOpenMP26_27.pdf}{Repository copy}.
   \bibitem{performance-metrics}
     Universitat Aut\`onoma de Barcelona,
-    \textit{Parallel Programming, Lecture 3: Introduction to Parallelism},
-    slides 20--22 and 26--30, speedup, efficiency, and scalability.
+    \textit{Lecture 3: Introduction to Parallelism},
+    slides 20--22, 26--30.
+  \bibitem{openmp-lecture}
+    Universitat Aut\`onoma de Barcelona,
+    \textit{Lecture 4: OpenMP}, slides 25--37, 44--53.
   \bibitem{starter-code}
     Supplied sequential implementation,
     \href{../../code/XXNN-Multinivell-main/main.c}{\texttt{main.c}},
