@@ -1,0 +1,43 @@
+#!/bin/bash
+#SBATCH --job-name=nn-openmp
+#SBATCH --partition=new-nodo.q
+#SBATCH --nodelist=clus07
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=12
+#SBATCH --threads-per-core=1
+#SBATCH --exclusive
+#SBATCH --time=00:30:00
+#SBATCH --output=openmp-%j.out
+
+set -e
+cd "$SLURM_SUBMIT_DIR"
+
+module add gcc/13.2.1
+
+hostname
+gcc --version
+lscpu
+
+gcc -Ofast -fopenmp \
+    main.c common/common.c configuration/config.c \
+    layer/layer.c randomizer/randomizer.c \
+    initialize/initialize.c training/training.c \
+    -o exec_openmp -lm
+
+export OMP_DYNAMIC=FALSE
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+export OMP_DISPLAY_ENV=TRUE
+
+for run in 1 2 3 4 5; do
+    for threads in 1 2 4 6 12; do
+        export OMP_NUM_THREADS="$threads"
+        printf '\nThreads=%s Run=%s\n' "$threads" "$run"
+
+        srun --ntasks=1 --cpus-per-task=12 \
+            --distribution=block:block \
+            --cpu-bind=verbose,cores \
+            ./exec_openmp configuration/configfile.txt
+    done
+done
