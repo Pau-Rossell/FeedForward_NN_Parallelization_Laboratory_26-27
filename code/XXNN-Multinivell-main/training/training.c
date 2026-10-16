@@ -38,12 +38,17 @@ void feed_input(int i) {
  * per tots els patrons del batch i aplicar-les a l'acabar de processar tot el 
  * batch.
  **/
-void init_deltas() {
+void init_deltas(void) {
+    // Weight gradients: connections between consecutive layers.
     for (int i = 0; i < num_layers - 1; i++) {
-        for (int j = 0; j < num_neurons[i]; j++) 
-            lay[i].dbias[j] = 0.0;
-        for (int j = 0; j < num_neurons[i + 1] * num_neurons[i]; j++) 
-            lay[i].dw[j] = 0.0;
+        for (int j = 0; j < num_neurons[i + 1] * num_neurons[i]; j++)
+            lay[i].dw[j] = 0.0f;
+    }
+
+    // Bias gradients: hidden and output layers.
+    for (int i = 1; i < num_layers; i++) {
+        for (int j = 0; j < num_neurons[i]; j++)
+            lay[i].dbias[j] = 0.0f;
     }
 }
 
@@ -184,13 +189,16 @@ void back_prop(int p) {
  */
 void update_weights(void) {
     for (int i = 0; i < num_layers - 1; i++) {
-        for (int j = 0; j < num_neurons[i + 1]; j++)
-            for (int k = 0; k < num_neurons[i]; k++)  // Update Weights
-                lay[i].out_weights[j * num_neurons[i] + k] =
-                    (lay[i].out_weights[j * num_neurons[i] + k]) -
-                    (alpha * lay[i].dw[j * num_neurons[i] + k]);
+        for (int j = 0; j < num_neurons[i + 1]; j++) {
+            for (int k = 0; k < num_neurons[i]; k++) {
+                int idx = j * num_neurons[i] + k;
+                lay[i].out_weights[idx] -= alpha * lay[i].dw[idx];
+            }
+        }
+    }
 
-        for (int j = 0; j < num_neurons[i]; j++)  // Update Bias
-            lay[i].bias[j] = lay[i].bias[j] - (alpha * lay[i].dbias[j]);
+    for (int i = 1; i < num_layers; i++) {
+        for (int j = 0; j < num_neurons[i]; j++)
+            lay[i].bias[j] -= alpha * lay[i].dbias[j];
     }
 }

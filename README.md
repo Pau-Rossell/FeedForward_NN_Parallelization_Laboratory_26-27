@@ -11,6 +11,14 @@ and a shared project scaffold; the parallel versions are still to be developed.
 The current development scope is **OpenMP**. The `openmpi` and `cuda` branches
 are reserved for later work; no MPI or GPU implementation setup is included yet.
 
+The [OpenMP LaTeX report](reports/OpenMP/report.tex) explains the approach in
+development order and will be updated as each step is completed.
+Read the [compiled report](reports/OpenMP/report.pdf). From `reports/OpenMP/`,
+compile the source directly with `pdflatex report.tex` twice to resolve references,
+or use `latexmk -pdf report.tex` to manage the required passes automatically.
+The optional `make -C reports/OpenMP` shortcut keeps intermediate files in
+`reports/OpenMP/build/` and updates `report.pdf`.
+
 ## Task brief
 
 The network learns to recognize handwritten digits `0–9` from binary `32 × 32`
@@ -75,7 +83,8 @@ dates; consult the Virtual Campus schedule.
 ├── configs/                          # Future smoke-test and benchmark configs
 ├── scripts/                          # Future job, benchmark, and profiling scripts
 ├── results/                          # Future small measurement tables and summaries
-└── reports/                          # Future report sources, figures, and final PDFs
+└── reports/
+    └── OpenMP/                       # LaTeX report, PDF, and build Makefile
 ```
 
 The four new folders contain `.gitkeep` placeholders. Keep executable code in
@@ -142,10 +151,11 @@ and accelerator measurements on the architecture laboratory GPU queue.
 
 Before implementing parallelism:
 
-1. **Establish a correct sequential reference.** A local AddressSanitizer run
-   confirms a heap-buffer overflow in `common.c:readImg()`: `%s` writes a
-   terminating byte beyond the final row of the allocated image. Source review
-   also shows that partial batches are skipped (34 patterns per default epoch)
+1. **Establish a correct sequential reference.** The buffer overflow in
+   `common.c:readImg()` has been fixed using a separate bounded row buffer.
+   The image-reader regression check in `tests/read_img_test.c` passes under
+   AddressSanitizer on all 2,880 OPTDIGITS images and small edge cases.
+   Source review also shows that partial batches are skipped (34 patterns per default epoch)
    and output-layer bias gradients are never reset or applied. Review these
    together with configuration validation and the loss/gradient formula.
 2. **Make initialization reproducible.** The configured `seed` drives the custom
@@ -168,7 +178,7 @@ Before implementing parallelism:
    The initial commit already tracks `.DS_Store` files and the supplied `exec`;
    consider untracking these generated files in a separate cleanup commit.
 
-The starter source is unchanged by this scaffold. Local compilation succeeds
-with a `RAND_MAX` conversion warning; the sanitizer run fails on the image
-reader overflow above. Parallel implementations and cluster performance
-measurements have not yet been performed.
+The sequential baseline review is underway. Local compilation succeeds with
+a `RAND_MAX` conversion warning, and the isolated image-reader sanitizer check
+passes after the first safety fix. Parallel implementations and cluster
+performance measurements have not yet been performed.

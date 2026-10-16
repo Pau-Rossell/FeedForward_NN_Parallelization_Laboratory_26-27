@@ -25,17 +25,28 @@
 #include <string.h>
 
 char* readImg(FILE* fd) {
-    char* img;
-    img = (char*)malloc(img_dim_x * img_dim_y);
+    char* img = malloc((size_t)img_dim_x * img_dim_y);
+    if (img == NULL)
+        return NULL;
+
+    /* Keep line endings and the string terminator outside the pixel array. */
+    char row[img_dim_y + 3];
 
     for (int i = 0; i < img_dim_x; i++) {
-        if (fscanf(fd, "%s\n", &img[i * img_dim_x]) != 1) {
+        if (fgets(row, sizeof(row), fd) == NULL ||
+            strcspn(row, "\r\n") != (size_t)img_dim_y) {
             free(img);
             fprintf(stderr, "Error reading image\n");
             exit(-1);
         }
-        for (int j = 0; j < img_dim_y; j++)
-            img[i * img_dim_y + j] -= '0';
+        for (int j = 0; j < img_dim_y; j++) {
+            if (row[j] != '0' && row[j] != '1') {
+                free(img);
+                fprintf(stderr, "Invalid pixel in image\n");
+                exit(-1);
+            }
+            img[i * img_dim_y + j] = row[j] - '0';
+        }
     }
     return img;
 }
@@ -56,15 +67,16 @@ char** loadPatternSet(int nf, char* fname, int trainS) {
             error = 1;
             break;
         }
-        memset(desired_outputs[i], 0, num_out_layer * sizeof(float));
         if (fscanf(fd, "%d\n", &c) != 1) {
             error = 1;
             break;
         }
-        if (trainS)
+        if (trainS) {
+            memset(desired_outputs[i], 0, num_out_layer * sizeof(float));
             desired_outputs[i][c] = 1.0;
-        else
+}       else {
             Validation[i] = c;
+}
     }
     fclose(fd);
     if (error)
